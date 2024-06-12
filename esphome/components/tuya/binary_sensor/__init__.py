@@ -5,7 +5,7 @@ from esphome.const import CONF_SENSOR_DATAPOINT
 
 from .. import tuya_ns, CONF_TUYA_ID, Tuya
 
-DEPENDENCIES = ["tuya"]
+DEPENDENCIES = ["tuya_zigbee"]
 CODEOWNERS = ["@jesserockz"]
 
 TuyaBinarySensor = tuya_ns.class_(

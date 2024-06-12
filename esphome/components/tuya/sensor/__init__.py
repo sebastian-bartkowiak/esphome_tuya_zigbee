@@ -4,7 +4,7 @@ import esphome.codegen as cg
 from esphome.const import CONF_ID, CONF_SENSOR_DATAPOINT
 from .. import tuya_ns, CONF_TUYA_ID, Tuya
 
-DEPENDENCIES = ["tuya"]
+DEPENDENCIES = ["tuya_zigbee"]
 CODEOWNERS = ["@jesserockz"]
 
 TuyaSensor = tuya_ns.class_("TuyaSensor", sensor.Sensor, cg.Component)

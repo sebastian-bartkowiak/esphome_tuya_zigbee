@@ -14,7 +14,7 @@ from esphome.const import (
 )
 from .. import tuya_ns, CONF_TUYA_ID, Tuya
 
-DEPENDENCIES = ["tuya"]
+DEPENDENCIES = ["tuya_zigbee"]
 
 CONF_DIMMER_DATAPOINT = "dimmer_datapoint"
 CONF_MIN_VALUE_DATAPOINT = "min_value_datapoint"

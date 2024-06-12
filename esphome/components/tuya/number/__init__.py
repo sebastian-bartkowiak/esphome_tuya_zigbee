@@ -11,7 +11,7 @@ from esphome.const import (
 )
 from .. import tuya_ns, CONF_TUYA_ID, Tuya
 
-DEPENDENCIES = ["tuya"]
+DEPENDENCIES = ["tuya_zigbee"]
 CODEOWNERS = ["@frankiboy1"]
 
 TuyaNumber = tuya_ns.class_("TuyaNumber", number.Number, cg.Component)

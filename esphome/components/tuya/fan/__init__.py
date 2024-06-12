@@ -4,7 +4,7 @@ import esphome.codegen as cg
 from esphome.const import CONF_OUTPUT_ID, CONF_SPEED_COUNT, CONF_SWITCH_DATAPOINT
 from .. import tuya_ns, CONF_TUYA_ID, Tuya
 
-DEPENDENCIES = ["tuya"]
+DEPENDENCIES = ["tuya_zigbee"]
 
 CONF_SPEED_DATAPOINT = "speed_datapoint"
 CONF_OSCILLATION_DATAPOINT = "oscillation_datapoint"

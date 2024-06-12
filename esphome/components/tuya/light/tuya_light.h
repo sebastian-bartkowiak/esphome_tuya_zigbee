@@ -1,7 +1,7 @@
 #pragma once
 
 #include "esphome/core/component.h"
-#include "esphome/components/tuya/tuya.h"
+#include "./../tuya.h"
 #include "esphome/components/light/light_output.h"
 
 namespace esphome {
