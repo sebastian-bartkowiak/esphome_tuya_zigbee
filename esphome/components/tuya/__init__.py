@@ -13,6 +13,7 @@ CONF_IGNORE_MCU_UPDATE_ON_DATAPOINTS = "ignore_mcu_update_on_datapoints"
 CONF_ON_DATAPOINT_UPDATE = "on_datapoint_update"
 CONF_DATAPOINT_TYPE = "datapoint_type"
 CONF_STATUS_PIN = "status_pin"
+CONF_TX_WAKE_UP_PIN = "tx_wake_up_pin"
 
 tuya_ns = cg.esphome_ns.namespace("tuya")
 Tuya = tuya_ns.class_("Tuya", cg.Component, uart.UARTDevice)
@@ -90,6 +91,7 @@ CONFIG_SCHEMA = (
             cv.Optional(CONF_IGNORE_MCU_UPDATE_ON_DATAPOINTS): cv.ensure_list(
                 cv.uint8_t
             ),
+            cv.Required(CONF_TX_WAKE_UP_PIN): pins.gpio_input_pin_schema,
             cv.Optional(CONF_STATUS_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_ON_DATAPOINT_UPDATE): automation.validate_automation(
                 {
@@ -114,6 +116,8 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await uart.register_uart_device(var, config)
+    tx_wake_up_pin_ = await cg.gpio_pin_expression(config[CONF_TX_WAKE_UP_PIN])
+    cg.add(var.set_tx_wake_up_pin(tx_wake_up_pin_))
     if CONF_TIME_ID in config:
         time_ = await cg.get_variable(config[CONF_TIME_ID])
         cg.add(var.set_time_id(time_))

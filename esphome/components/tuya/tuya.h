@@ -84,6 +84,7 @@ class Tuya : public Component, public uart::UARTDevice {
   void set_boolean_datapoint_value(uint8_t datapoint_id, bool value);
   void set_integer_datapoint_value(uint8_t datapoint_id, uint32_t value);
   void set_status_pin(InternalGPIOPin *status_pin) { this->status_pin_ = status_pin; }
+  void set_tx_wake_up_pin(GPIOPin *tx_wake_up_pin) { this->tx_wake_up_pin_ = tx_wake_up_pin; }
   void set_string_datapoint_value(uint8_t datapoint_id, const std::string &value);
   void set_enum_datapoint_value(uint8_t datapoint_id, uint8_t value);
   void set_bitmask_datapoint_value(uint8_t datapoint_id, uint32_t value, uint8_t length);
@@ -133,6 +134,7 @@ class Tuya : public Component, public uart::UARTDevice {
   int init_retries_{0};
   uint8_t protocol_version_ = -1;
   InternalGPIOPin *status_pin_{nullptr};
+  GPIOPin *tx_wake_up_pin_;
   int status_pin_reported_ = -1;
   int reset_pin_reported_ = -1;
   uint32_t last_command_timestamp_ = 0;

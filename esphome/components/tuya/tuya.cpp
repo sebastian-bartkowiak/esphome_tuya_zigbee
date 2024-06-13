@@ -20,13 +20,17 @@ static const char *const TAG = "tuya";
 static const int COMMAND_DELAY = 10;
 static const int RECEIVE_TIMEOUT = 300;
 static const int MAX_RETRIES = 5;
+static const int TX_WAKE_UP_DELAY_START = 5;
+static const int TX_WAKE_UP_DELAY_STOP = 40;
+
 
 void Tuya::setup() {
-  this->set_timeout("product_query", 1000, [this] { this->send_empty_command_(TuyaCommandType::PRODUCT_QUERY); });
-  this->set_interval("dp_query", 10000, [this] {
-    ESP_LOGD(TAG, "querying datapoints");
-    this->send_empty_command_(TuyaCommandType::QUERY_DATAPOINTS);
-  });
+  this->tx_wake_up_pin_->setup();
+  ESP_LOGD(TAG, "PULLING TX WAKEUP HIGH");
+  this->tx_wake_up_pin_->digital_write(true);
+
+  this->set_interval("product_query", 5000, [this] { this->send_empty_command_(TuyaCommandType::PRODUCT_QUERY); });
+
   if (this->status_pin_ != nullptr) {
     this->status_pin_->digital_write(false);
   }
@@ -75,6 +79,7 @@ void Tuya::dump_config() {
                   this->reset_pin_reported_);
   }
   LOG_PIN("  Status Pin: ", this->status_pin_);
+  LOG_PIN("  TX wake up Pin: ", this->tx_wake_up_pin_);
   ESP_LOGCONFIG(TAG, "  Product: '%s'", this->product_.c_str());
 }
 
@@ -161,6 +166,8 @@ void Tuya::handle_command_(uint16_t seq_no, uint8_t command, uint8_t version, co
     this->expected_response_.reset();
     this->command_queue_.erase(command_queue_.begin());
     this->init_retries_ = 0;
+    ESP_LOGD(TAG, "PULLING TX WAKEUP HIGH");
+    this->tx_wake_up_pin_->digital_write(true);
   }
 
   switch (command_type) {
@@ -363,14 +370,16 @@ void Tuya::send_raw_command_(TuyaCommand command) {
 
 void Tuya::process_command_queue_() {
   uint32_t now = millis();
-  uint32_t delay = now - this->last_command_timestamp_;
+  uint32_t elapsed = now - this->last_command_timestamp_;
 
   if (now - this->last_rx_char_timestamp_ > RECEIVE_TIMEOUT) {
     this->rx_message_.clear();
   }
 
-  if (this->expected_response_.has_value() && delay > RECEIVE_TIMEOUT) {
+  if (this->expected_response_.has_value() && elapsed > RECEIVE_TIMEOUT) {
     this->expected_response_.reset();
+    ESP_LOGD(TAG, "PULLING TX WAKEUP HIGH");
+    this->tx_wake_up_pin_->digital_write(true);
     if (init_state_ != TuyaInitState::INIT_DONE) {
       if (++this->init_retries_ >= MAX_RETRIES) {
         this->init_failed_ = true;
@@ -384,11 +393,18 @@ void Tuya::process_command_queue_() {
   }
 
   // Left check of delay since last command in case there's ever a command sent by calling send_raw_command_ directly
-  if (delay > COMMAND_DELAY && !this->command_queue_.empty() && this->rx_message_.empty() &&
+  if (elapsed > COMMAND_DELAY && !this->command_queue_.empty() && this->rx_message_.empty() &&
       !this->expected_response_.has_value()) {
+    ESP_LOGD(TAG, "PULLING TX WAKEUP LOW");
+    this->tx_wake_up_pin_->digital_write(false);
+    delay(TX_WAKE_UP_DELAY_START);
     this->send_raw_command_(command_queue_.front());
-    if (!this->expected_response_.has_value())
+    if (!this->expected_response_.has_value()){
       this->command_queue_.erase(command_queue_.begin());
+      delay(TX_WAKE_UP_DELAY_STOP);
+      ESP_LOGD(TAG, "PULLING TX WAKEUP HIGH");
+      this->tx_wake_up_pin_->digital_write(true);
+    }
   }
 }
 
